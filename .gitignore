@@ -1,0 +1,90 @@
+# ============================================
+# OS / Editor / IDE
+# ============================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# ============================================
+# Logs
+# ============================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ============================================
+# Environment & Secrets
+# ============================================
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ============================================
+# Database Backups (keep schema, ignore exports)
+# ============================================
+database/*.sql.gz
+database/*.sql.zip
+database/backup_*.sql
+database/*.dump
+
+# ============================================
+# Frontend (React + Vite)
+# ============================================
+Frontend/node_modules/
+Frontend/dist/
+Frontend/dist-ssr/
+Frontend/*.local
+
+# ============================================
+# Backend (Laravel)
+# ============================================
+Backend/vendor/
+Backend/node_modules/
+Backend/public/hot
+Backend/public/storage
+Backend/storage/*.key
+Backend/storage/pail
+Backend/storage/framework/cache/data/*
+Backend/storage/framework/sessions/*
+Backend/storage/framework/testing/*
+Backend/storage/framework/views/*
+Backend/storage/logs/*
+Backend/bootstrap/cache/*.php
+Backend/bootstrap/cache/services.php
+Backend/bootstrap/cache/packages.php
+Backend/.phpunit.result.cache
+
+# Composer
+Backend/composer.lock
+
+# Laravel Horizon / Telescope (if added later)
+Backend/public/vendor/horizon
+Backend/public/vendor/telescope
+
+# ============================================
+# Dependency Lock Files (optional — uncomment if team uses exact locks)
+# ============================================
+# Frontend/package-lock.json
+# Frontend/yarn.lock
+# Frontend/pnpm-lock.yaml
+
+# ============================================
+# Temporary / Cache
+# ============================================
+cache/
+tmp/
+temp/
+sessions/
+*.cache

@@ -14,11 +14,17 @@
 
 <br/>
 
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Vercel_Storefront-000000?style=for-the-badge&logo=vercel)](https://frontend-e-commerce-rose-phi.vercel.app)
+[![Live API](https://img.shields.io/badge/⚡_Live_API-Render_Backend-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://zodiac-backend-6vfn.onrender.com)
+
+<br/><br/>
+
 <p align="center">
   A high-performance, full-stack e-commerce web application featuring a modern <b>React 19</b> frontend and a robust <b>Laravel API</b> backend. Built with real-world payment integrations (<b>Bakong KHQR</b> & <b>ABA PayWay</b>), instantaneous client-side product filtering, email OTP password recovery, Telegram order alerts, dark/light theme switching, and an administrative control panel.
 </p>
 
 </div>
+
 
 ---
 

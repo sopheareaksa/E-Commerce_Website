@@ -10,11 +10,16 @@
 [![SweetAlert2](https://img.shields.io/badge/SweetAlert2-Alerts-8B5CF6?style=for-the-badge)](https://sweetalert2.github.io/)
 [![Bakong KHQR](https://img.shields.io/badge/Bakong-KHQR_SDK-ED1C24?style=for-the-badge)](https://bakong.nbc.gov.kh/)
 
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Vercel_Storefront-000000?style=for-the-badge&logo=vercel)](https://frontend-e-commerce-rose-phi.vercel.app)
+
+<br/><br/>
+
 <p align="center">
   A modern, high-performance Single Page Application (SPA) built with <b>React 19</b>, <b>Vite</b>, and <b>Tailwind CSS v4</b>. Features instant client-side catalog filtering, integrated <b>Bakong KHQR</b> & <b>ABA PayWay</b> payment workflows, OTP password reset modals, dark/light theme switching, and an administrative control panel.
 </p>
 
 </div>
+
 
 ---
 

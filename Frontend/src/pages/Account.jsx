@@ -169,8 +169,18 @@ export default function Account() {
                                 ))}
                               </div>
                               <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
-                                <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">Order Total</span>
-                                <span className="text-sm font-bold text-slate-900 dark:text-white">${parseFloat(o.order_cost).toFixed(2)}</span>
+                                <div>
+                                  <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold block">Order Total</span>
+                                  <span className="text-sm font-bold text-slate-900 dark:text-white">${parseFloat(o.order_cost).toFixed(2)}</span>
+                                </div>
+                                {o.order_status?.toLowerCase() !== 'paid' && o.order_status?.toLowerCase() !== 'cancelled' && (
+                                  <Link
+                                    to={`/payment?order_id=${o.order_id}`}
+                                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold bg-red-600 hover:bg-red-700 text-white shadow-sm transition"
+                                  >
+                                    <CreditCard className="w-3.5 h-3.5" /> Pay Now
+                                  </Link>
+                                )}
                               </div>
                             </div>
                           )}

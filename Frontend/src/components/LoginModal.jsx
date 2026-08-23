@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { X, Mail, Lock, LogIn } from 'lucide-react';
 
 export default function LoginModal() {
-  const { login, loginModalOpen, setLoginModalOpen, setRegisterModalOpen } = useAuth();
+  const { login, loginModalOpen, setLoginModalOpen, setRegisterModalOpen, setForgotPasswordModalOpen } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -79,6 +79,16 @@ export default function LoginModal() {
                 required
                 className="w-full pl-11 pr-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-slate-800 dark:text-slate-200"
               />
+            </div>
+
+            <div className="text-right -mt-1">
+              <button
+                type="button"
+                onClick={() => { close(); setForgotPasswordModalOpen(true); }}
+                className="text-sm text-indigo-600 font-semibold hover:underline"
+              >
+                Forgot password?
+              </button>
             </div>
 
             <button

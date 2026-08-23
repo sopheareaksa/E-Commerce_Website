@@ -116,6 +116,7 @@ export default function Orders() {
               ) : (
                 orders.map((o) => {
                   const items = o.items || [];
+                  const customerName = o.user?.user_name || 'Guest';
                   const itemCount = items.length;
                   const isExpanded = expanded.has(o.order_id);
                   return [
@@ -124,9 +125,9 @@ export default function Orders() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                            {(o.user_name || 'G').charAt(0).toUpperCase()}
+                            {customerName.charAt(0).toUpperCase()}
                           </div>
-                          <span className="font-medium text-gray-900 dark:text-white">{o.user_name || 'Guest'}</span>
+                          <span className="font-medium text-gray-900 dark:text-white">{customerName}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600 dark:text-slate-400">

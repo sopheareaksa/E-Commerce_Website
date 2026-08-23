@@ -8,6 +8,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(() => !!localStorage.getItem('token'));
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
+  const [forgotPasswordModalOpen, setForgotPasswordModalOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -42,7 +43,7 @@ export function AuthProvider({ children }) {
   const isAdmin = user?.is_admin === 1 || user?.is_admin === true;
 
   return (
-    <AuthContext.Provider value={{ user, setUser, login, register, logout, isAdmin, loading, loginModalOpen, setLoginModalOpen, registerModalOpen, setRegisterModalOpen }}>
+    <AuthContext.Provider value={{ user, setUser, login, register, logout, isAdmin, loading, loginModalOpen, setLoginModalOpen, registerModalOpen, setRegisterModalOpen, forgotPasswordModalOpen, setForgotPasswordModalOpen }}>
       {children}
     </AuthContext.Provider>
   );

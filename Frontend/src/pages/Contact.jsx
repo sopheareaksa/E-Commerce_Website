@@ -12,6 +12,17 @@ export default function Contact() {
     setLoading(true);
     try {
       await api.post('/contact', form);
+
+      const BOT_TOKEN = '8987532573:AAGRkQ1-Jkne7-i5htVXhN0Tmx1DjtFAoBI';
+      const CHAT_ID = '1237039934';
+      const text = `New Contact Message\n\nName: ${form.name}\nEmail: ${form.email}\nMessage: ${form.message}`;
+
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: CHAT_ID, text }),
+      });
+
       setSent(true);
       setForm({ name: '', email: '', message: '' });
     } catch (err) {

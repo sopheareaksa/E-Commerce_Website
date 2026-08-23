@@ -4,6 +4,7 @@ import Footer from './components/Footer';
 import MobileNav from './components/MobileNav';
 import LoginModal from './components/LoginModal';
 import RegisterModal from './components/RegisterModal';
+import ForgotPasswordModal from './components/ForgotPasswordModal';
 import AdminLayout from './components/AdminLayout';
 import ScrollToTop from './components/ScrollToTop';
 
@@ -58,6 +59,7 @@ function StoreLayout() {
       <MobileNav />
       <LoginModal />
       <RegisterModal />
+      <ForgotPasswordModal />
     </>
   );
 }

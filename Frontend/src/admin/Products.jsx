@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
+import { useProducts } from '../context/ProductContext';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
+  const { refreshProducts } = useProducts();
   useEffect(() => {
     api.get('/admin/products').then((res) => {
       setProducts(res.data);
@@ -16,6 +18,7 @@ export default function Products() {
     try {
       await api.delete(`/admin/products/${id}`);
       setProducts(products.filter((p) => p.product_id !== id));
+      if (refreshProducts) await refreshProducts();
     } catch (err) {
       alert(err.response?.data?.message || 'Delete failed');
     }

@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
+import { useProducts } from '../context/ProductContext';
 import { Save, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function EditProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { refreshProducts } = useProducts();
   const [form, setForm] = useState({
     product_name: '',
     product_category: '',
@@ -60,6 +62,7 @@ export default function EditProduct() {
 
     try {
       await api.post(`/admin/products/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      if (refreshProducts) await refreshProducts();
       setSuccess('Product updated successfully!');
       navigate('/admin/dashboard');
     } catch (err) {

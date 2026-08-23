@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
+import { useProducts } from '../context/ProductContext';
 import { Save, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function AddProduct() {
   const navigate = useNavigate();
+  const { refreshProducts } = useProducts();
   const [form, setForm] = useState({
     product_name: '',
     product_category: '',
@@ -37,6 +39,7 @@ export default function AddProduct() {
 
     try {
       await api.post('/admin/products', data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      if (refreshProducts) await refreshProducts();
       setSuccess('Product added successfully!');
       navigate('/admin/dashboard');
     } catch (err) {

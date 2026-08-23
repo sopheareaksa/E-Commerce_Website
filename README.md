@@ -373,5 +373,4 @@ The database comes pre-seeded with the following test credentials:
 
 - **Author**: **Pheak SopheaReaksa**
 - **Purpose**: Academic Assignment & Portfolio Full-Stack Project.
-- **License**: Released under the [MIT License](https://opensource.org/licenses/MIT).#   E - C o m m e r c e _ W e b s i t e  
- 
+- **License**: Released under the [MIT License](https://opensource.org/licenses/MIT).

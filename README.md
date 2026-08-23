@@ -14,8 +14,6 @@
 
 <br/>
 
-<img src="./Frontend/public/img/logo.png" alt="Zodiac Store Logo" width="220" />
-
 <p align="center">
   A high-performance, full-stack e-commerce web application featuring a modern <b>React 19</b> frontend and a robust <b>Laravel API</b> backend. Built with real-world payment integrations (<b>Bakong KHQR</b> & <b>ABA PayWay</b>), instantaneous client-side product filtering, email OTP password recovery, Telegram order alerts, dark/light theme switching, and an administrative control panel.
 </p>

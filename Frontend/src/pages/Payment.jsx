@@ -117,13 +117,19 @@ export default function Payment() {
           setIsPolling(false);
           setTxnId(bakongData.md5 || `ORD-${orderId}`);
           setSuccess(true);
-          Swal.fire({ title: 'Payment Successful!', icon: 'success', draggable: true });
+          try { localStorage.removeItem('cached_orders'); } catch {}
+          Swal.fire({
+            title: 'Payment Successful!',
+            text: 'Your payment was confirmed automatically by the bank.',
+            icon: 'success',
+            draggable: true
+          });
         }
       } catch (err) {
-        // Silently keep polling unless manually stopped
+        // Silently keep polling
         console.debug('Polling check error:', err.message);
       }
-    }, 3500);
+    }, 2000);
 
     return () => {
       if (pollingTimerRef.current) clearInterval(pollingTimerRef.current);

@@ -45,25 +45,16 @@ export default function Home() {
   const fullText = slides[currentSlide].title;
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-      setTypedText('');
-      setIsDeleting(false);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [slides.length]);
-
-  useEffect(() => {
     let timeout;
-    const typeSpeed = isDeleting ? 40 : 100;
+    const typeSpeed = isDeleting ? 40 : 90;
 
     if (!isDeleting && typedText === fullText) {
-      timeout = setTimeout(() => setIsDeleting(true), 1200);
+      timeout = setTimeout(() => setIsDeleting(true), 2000);
     } else if (isDeleting && typedText === '') {
       timeout = setTimeout(() => {
         setCurrentSlide((prev) => (prev + 1) % slides.length);
         setIsDeleting(false);
-      }, 200);
+      }, 300);
     } else {
       timeout = setTimeout(() => {
         setTypedText((prev) =>

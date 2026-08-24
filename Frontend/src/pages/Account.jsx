@@ -6,13 +6,22 @@ import { ShoppingBag, CreditCard, MapPin, LogOut, Clock, CheckCircle, XCircle, T
 
 export default function Account() {
   const { user, logout, setUser, setLoginModalOpen } = useAuth();
-  const [orders, setOrders] = useState([]);
-  const [form, setForm] = useState({ user_name: '', user_email: '', user_phone: '' });
+  const [orders, setOrders] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cached_user_orders');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [loadingOrders, setLoadingOrders] = useState(() => !localStorage.getItem('cached_user_orders'));
+  const [form, setForm] = useState({ user_name: user?.user_name || '', user_email: user?.user_email || '', user_phone: user?.user_phone || '' });
   const [passForm, setPassForm] = useState({ old_password: '', password: '', password_confirmation: '' });
   const [mode, setMode] = useState('dashboard');
   const [expandedOrders, setExpandedOrders] = useState(new Set());
 
-  // Sync form fields when user data arrives/changes (e.g. on login or page refresh)
+  // Sync form fields when user data arrives/changes
   const [prevUserId, setPrevUserId] = useState(user?.user_id);
   if (user?.user_id !== prevUserId) {
     setPrevUserId(user?.user_id);
@@ -30,7 +39,19 @@ export default function Account() {
       setLoginModalOpen(true);
       return;
     }
-    api.get('/orders').then((res) => setOrders(res.data));
+    api.get('/orders')
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setOrders(res.data);
+          try {
+            localStorage.setItem('cached_user_orders', JSON.stringify(res.data));
+          } catch {
+            // quota safety
+          }
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingOrders(false));
   }, [user, setLoginModalOpen]);
 
   const handleUpdate = async (e) => {
@@ -97,19 +118,16 @@ export default function Account() {
               <p className="text-gray-400 dark:text-slate-400 text-sm">{user.user_email}</p>
             </div>
             <nav className="space-y-2">
-              <button onClick={() => setMode('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition font-medium ${mode === 'dashboard' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'}`}>
-                <ShoppingBag className="w-5 h-5" /> Dashboard
+              <button onClick={() => setMode('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition font-medium cursor-pointer ${mode === 'dashboard' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'}`}>
+                <ShoppingBag className="w-5 h-5" /> Orders
               </button>
-              <button onClick={() => setMode('profile')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition font-medium ${mode === 'profile' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'}`}>
+              <button onClick={() => setMode('profile')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition font-medium cursor-pointer ${mode === 'profile' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'}`}>
                 <MapPin className="w-5 h-5" /> Profile
               </button>
-              <button onClick={() => setMode('security')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition font-medium ${mode === 'security' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'}`}>
+              <button onClick={() => setMode('security')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition font-medium cursor-pointer ${mode === 'security' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'}`}>
                 <Lock className="w-5 h-5" /> Security
               </button>
-              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition font-medium">
-                <CreditCard className="w-5 h-5" /> Payment Methods
-              </button>
-              <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition font-medium">
+              <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition font-medium cursor-pointer">
                 <LogOut className="w-5 h-5" /> Sign Out
               </button>
             </nav>
@@ -121,7 +139,13 @@ export default function Account() {
             <div className="space-y-8">
               <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-8">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Recent Orders</h2>
-                {orders.length === 0 ? (
+                {loadingOrders && orders.length === 0 ? (
+                  <div className="space-y-4 animate-pulse">
+                    {[1, 2].map((i) => (
+                      <div key={i} className="h-20 bg-slate-100 dark:bg-slate-700 rounded-2xl" />
+                    ))}
+                  </div>
+                ) : orders.length === 0 ? (
                   <div className="text-center py-12 text-gray-500 dark:text-slate-400">
                     <ShoppingBag className="w-12 h-12 mx-auto mb-4 opacity-30" />
                     <p>You have no recent orders.</p>
@@ -212,7 +236,7 @@ export default function Account() {
                   <input type="text" value={form.user_phone} onChange={(e) => setForm({ ...form, user_phone: e.target.value })}
                     className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200" />
                 </div>
-                <button type="submit" className="bg-indigo-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-indigo-700 transition">
+                <button type="submit" className="bg-indigo-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-indigo-700 transition cursor-pointer">
                   Save Changes
                 </button>
               </form>
@@ -249,7 +273,7 @@ export default function Account() {
                     required
                     className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200" />
                 </div>
-                <button type="submit" className="bg-indigo-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-indigo-700 transition">
+                <button type="submit" className="bg-indigo-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-indigo-700 transition cursor-pointer">
                   Update Password
                 </button>
               </form>

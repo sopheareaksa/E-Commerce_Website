@@ -5,7 +5,7 @@ import ProductCard from '../components/ProductCard';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 
 export default function Home() {
-  const { products, getByCategory } = useProducts();
+  const { products, getByCategory, loading } = useProducts();
 
   const slides = [
     {
@@ -79,6 +79,30 @@ export default function Home() {
   const apples = getByCategory('apples').slice(0, 4);
   const samsungs = getByCategory('samsungs').slice(0, 4);
 
+  const renderProductGrid = (items) => {
+    if (loading && items.length === 0) {
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-gray-100 dark:border-slate-700 animate-pulse space-y-3">
+              <div className="bg-slate-100 dark:bg-slate-700 aspect-square rounded-xl" />
+              <div className="h-4 bg-slate-100 dark:bg-slate-700 rounded w-3/4" />
+              <div className="h-4 bg-slate-100 dark:bg-slate-700 rounded w-1/3" />
+              <div className="h-10 bg-slate-100 dark:bg-slate-700 rounded-xl" />
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {items.map((p) => (
+          <ProductCard key={p.product_id} product={p} />
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div>
       {/* Hero */}
@@ -98,84 +122,56 @@ export default function Home() {
             style={{ animationDelay: '4s' }}
           />
 
-          <div className="relative w-full z-10 flex flex-col md:flex-row items-center justify-between">
-            <div className="text-left space-y-4 md:space-y-6 md:w-1/2 z-20">
-              <span
-                className="inline-block py-1 px-3 rounded-full bg-white/10 text-indigo-300 text-sm font-semibold tracking-wide border border-white/20 backdrop-blur-sm animate-fade-up"
-                style={{ animationDelay: '0.2s' }}
-              >
-                New Arrivals
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center w-full">
+            <div className="space-y-6 text-center md:text-left">
+              <span className="inline-block px-4 py-1.5 rounded-full bg-white/10 text-indigo-300 text-xs md:text-sm font-semibold tracking-wide uppercase backdrop-blur-md border border-white/10">
+                {slides[currentSlide].subtitle}
               </span>
-
-              <div className="space-y-1 animate-slide-in-left" style={{ animationDelay: '0.3s' }}>
-                <h2 className="font-medium text-2xl md:text-3xl text-gray-300 min-h-[2rem]">
-                  {slides[currentSlide].subtitle}
-                </h2>
-                <h2 className="font-black text-5xl md:text-7xl text-white tracking-tight leading-tight min-h-[1.1em]">
-                  {typedText}
-                  <span className="inline-block w-[3px] h-[0.9em] ml-1 bg-indigo-400 align-middle animate-pulse" />
-                </h2>
-              </div>
-
-              <p
-                className="text-gray-400 dark:text-slate-500 max-w-md text-sm md:text-base line-clamp-2 md:line-clamp-none animate-slide-in-left"
-                style={{ animationDelay: '0.45s' }}
-              >
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight leading-none min-h-[1.2em]">
+                {typedText}
+                <span className="animate-pulse text-indigo-400">|</span>
+              </h1>
+              <p className="text-slate-300 text-sm md:text-base max-w-md mx-auto md:mx-0 line-clamp-3">
                 {slides[currentSlide].desc}
               </p>
-
-              <div className="animate-fade-up" style={{ animationDelay: '0.6s' }}>
+              <div className="pt-2">
                 <Link
                   to="/shop"
-                  className="group inline-flex items-center gap-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-8 py-3.5 mt-4 rounded-full font-bold shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.45)] active:scale-95 transition-all duration-300"
+                  className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-8 py-3.5 rounded-full shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105 active:scale-95 transition-all duration-300"
                 >
-                  Shop Collection
-                  <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  Shop Category <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>
 
-            <h1 className="text-white/[0.04] font-black text-[15vw] md:text-[8vw] leading-none uppercase absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 select-none pointer-events-none whitespace-nowrap animate-pulse">
-              GEAR
-            </h1>
-
-            <div
-              className="md:w-1/2 relative z-20 mt-10 md:mt-0 flex justify-center w-full max-w-[260px] sm:max-w-[300px] md:max-w-[340px] h-[300px] sm:h-[360px] md:h-[420px] animate-slide-in-right"
-              style={{ animationDelay: '0.5s' }}
-            >
-              {slides.map((slide, index) => (
-                <div
-                  key={slide.src}
-                  className={`absolute inset-0 flex items-center justify-center transition-all duration-700 ease-in-out ${
-                    index === currentSlide
-                      ? 'opacity-100 translate-y-0 scale-100 z-10'
-                      : 'opacity-0 translate-y-6 scale-95 z-0 pointer-events-none'
-                  }`}
-                >
-                  <img
-                    src={slide.src}
-                    alt={slide.alt}
-                    className="drop-shadow-[0_35px_35px_rgba(0,0,0,0.5)] max-h-full max-w-full object-contain"
-                  />
-                </div>
-              ))}
-
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-                {slides.map((_, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setCurrentSlide(idx)}
-                    aria-label={`Go to slide ${idx + 1}`}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      idx === currentSlide
-                        ? 'bg-white w-6'
-                        : 'bg-white/40 hover:bg-white/70 w-2'
-                    }`}
-                  />
-                ))}
+            <div className="relative flex justify-center items-center">
+              <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 flex items-center justify-center">
+                <img
+                  key={currentSlide}
+                  src={slides[currentSlide].src}
+                  alt={slides[currentSlide].alt}
+                  className="max-w-full max-h-full object-contain filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.5)] animate-fade-in transition-all duration-700 hover:scale-105"
+                />
               </div>
             </div>
+          </div>
+
+          {/* Slide Indicators */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+            {slides.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  setCurrentSlide(idx);
+                  setTypedText('');
+                  setIsDeleting(false);
+                }}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  currentSlide === idx ? 'w-8 bg-indigo-500' : 'w-2 bg-white/30 hover:bg-white/50'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
           </div>
         </div>
       </header>
@@ -236,11 +232,7 @@ export default function Home() {
             View All <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featured.map((p) => (
-            <ProductCard key={p.product_id} product={p} />
-          ))}
-        </div>
+        {renderProductGrid(featured)}
       </section>
 
       {/* Mid Season Banner */}
@@ -274,11 +266,7 @@ export default function Home() {
             View All <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {apples.map((p) => (
-            <ProductCard key={p.product_id} product={p} />
-          ))}
-        </div>
+        {renderProductGrid(apples)}
       </section>
 
       {/* Samsung Products */}
@@ -292,11 +280,7 @@ export default function Home() {
             View All <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {samsungs.map((p) => (
-            <ProductCard key={p.product_id} product={p} />
-          ))}
-        </div>
+        {renderProductGrid(samsungs)}
       </section>
     </div>
   );

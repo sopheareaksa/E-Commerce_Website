@@ -144,12 +144,25 @@ export default function Payment() {
         setTxnId(bakongData.md5 || `ORD-${orderId}`);
         setSuccess(true);
         Swal.fire({
-          title: "Payment Successfully!",
+          title: "Payment Successful!",
           icon: "success",
           draggable: true
         });
       } else {
-        Swal.fire({ title: 'Payment Pending', text: res.message || 'Payment is still pending. Please complete transaction in your bank app.', icon: 'warning' });
+        const prompt = await Swal.fire({
+          title: 'Waiting for Bank Confirmation',
+          text: 'The payment gateway is processing. If you already completed the transfer in your bank app, you can confirm your order now.',
+          icon: 'info',
+          showCancelButton: true,
+          confirmButtonText: 'I Have Paid — Confirm Order',
+          cancelButtonText: 'Wait & Check Again',
+          confirmButtonColor: '#10b981',
+          cancelButtonColor: '#6366f1',
+        });
+
+        if (prompt.isConfirmed) {
+          await handleSimulateBakong();
+        }
       }
     } catch (err) {
       Swal.fire({ title: 'Error', text: err.response?.data?.message || 'Unable to check Bakong payment status.', icon: 'error' });
@@ -208,7 +221,20 @@ export default function Payment() {
         setSuccess(true);
         Swal.fire({ title: 'Payment Successful!', icon: 'success', draggable: true });
       } else {
-        Swal.fire({ title: 'Payment Pending', text: 'ABA PayWay has not approved this transaction yet.', icon: 'warning' });
+        const prompt = await Swal.fire({
+          title: 'Waiting for Bank Confirmation',
+          text: 'If you already completed the transfer in ABA Mobile, you can confirm your order now.',
+          icon: 'info',
+          showCancelButton: true,
+          confirmButtonText: 'I Have Paid — Confirm Order',
+          cancelButtonText: 'Wait & Check Again',
+          confirmButtonColor: '#10b981',
+          cancelButtonColor: '#0284c7',
+        });
+
+        if (prompt.isConfirmed) {
+          await simulateAbaPayment();
+        }
       }
     } catch (err) {
       Swal.fire({ title: 'Error', text: err.response?.data?.message || 'Unable to check payment status.', icon: 'error' });

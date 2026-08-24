@@ -96,7 +96,20 @@ export default function ForgotPasswordModal() {
         </div>
         <div className="px-8 pb-8">
           {message && <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400">{message}</div>}
-          {error && <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">{error}</div>}
+          {error && (
+            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+              <p>{error}</p>
+              {error.includes('No account found') && (
+                <button
+                  type="button"
+                  onClick={() => { close(); setRegisterModalOpen(true); }}
+                  className="mt-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 underline hover:no-underline"
+                >
+                  Create a new account now →
+                </button>
+              )}
+            </div>
+          )}
 
           {step === 'email' && <form onSubmit={sendOtp} className="space-y-4">
             <Input icon={<Mail className="w-4 h-4" />} type="email" value={email} onChange={setEmail} placeholder="Email address" />

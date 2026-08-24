@@ -33,9 +33,6 @@ export default function ForgotPasswordModal() {
     try {
       const response = await api.post('/forgot-password/send-otp', { email });
       setMessage(response.data.message);
-      if (response.data.demo_otp) {
-        setOtp(response.data.demo_otp);
-      }
       setStep('otp');
     } catch (err) {
       setError(err.response?.data?.message || 'Unable to send a verification code.');

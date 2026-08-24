@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import api from '../api/axios'; // Make sure to import your API instance
 
 export default function Navbar() {
-  const { user, logout, isAdmin, setLoginModalOpen, setRegisterModalOpen } = useAuth();
+  const { user, logout, isAdmin, loading, setLoginModalOpen, setRegisterModalOpen } = useAuth();
   const { totalItems } = useCart();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -148,7 +148,9 @@ export default function Navbar() {
               )}
             </Link>
 
-            {!user ? (
+            {loading && !user ? (
+              <div className="w-28 h-9 bg-slate-200 dark:bg-slate-700 animate-pulse rounded-full" />
+            ) : !user ? (
               <div className="flex items-center gap-2">
                 <button onClick={() => setLoginModalOpen(true)} className="bg-indigo-600 px-6 py-2 rounded-full font-semibold hover:bg-indigo-700 hover:shadow-lg text-white transition-all active:scale-95">
                   Login
@@ -211,7 +213,11 @@ export default function Navbar() {
           <Link to="/category" onClick={() => setMobileOpen(false)} className="block py-3 text-lg font-semibold text-slate-800 dark:text-slate-200 border-b border-gray-100 dark:border-slate-700">Categories</Link>
           <Link to="/contact" onClick={() => setMobileOpen(false)} className="block py-3 text-lg font-semibold text-slate-800 dark:text-slate-200 border-b border-gray-100 dark:border-slate-700">Contact</Link>
           <Link to="/cart" onClick={() => setMobileOpen(false)} className="block py-3 text-lg font-semibold text-slate-800 dark:text-slate-200 border-b border-gray-100 dark:border-slate-700">Cart ({totalItems})</Link>
-          {user ? (
+          {loading && !user ? (
+            <div className="py-3">
+              <div className="w-32 h-8 bg-slate-200 dark:bg-slate-700 animate-pulse rounded-lg" />
+            </div>
+          ) : user ? (
             <>
               <Link to="/account" onClick={() => setMobileOpen(false)} className="block py-3 text-lg font-semibold text-slate-800 dark:text-slate-200 border-b border-gray-100 dark:border-slate-700">Account</Link>
               {isAdmin && <Link to="/admin/dashboard" onClick={() => setMobileOpen(false)} className="block py-3 text-lg font-semibold text-slate-800 dark:text-slate-200 border-b border-gray-100 dark:border-slate-700">Admin</Link>}

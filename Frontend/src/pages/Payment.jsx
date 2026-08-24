@@ -179,6 +179,7 @@ export default function Payment() {
       if (res.success) {
         setTxnId(res.transaction_id || `ORD-${orderId}`);
         setSuccess(true);
+        try { localStorage.removeItem('cached_orders'); } catch {}
         Swal.fire({ title: 'Payment Successful!', icon: 'success', draggable: true });
       } else {
         Swal.fire({ title: 'Error', text: res.message || 'Unable to confirm payment.', icon: 'error' });
@@ -219,6 +220,7 @@ export default function Payment() {
       if (response.data.paid) {
         setTxnId(`Order #${String(orderId).padStart(6, '0')}`);
         setSuccess(true);
+        try { localStorage.removeItem('cached_orders'); } catch {}
         Swal.fire({ title: 'Payment Successful!', icon: 'success', draggable: true });
       } else {
         const prompt = await Swal.fire({
@@ -249,6 +251,7 @@ export default function Payment() {
       const response = await api.post(`/payments/aba/simulate/${orderId}`);
       setTxnId(response.data.transaction_id);
       setSuccess(true);
+      try { localStorage.removeItem('cached_orders'); } catch {}
       Swal.fire({ title: 'Payment Successful!', icon: 'success', draggable: true });
     } catch (err) {
       Swal.fire({ title: 'Error', text: err.response?.data?.message || 'Unable to simulate payment.', icon: 'error' });

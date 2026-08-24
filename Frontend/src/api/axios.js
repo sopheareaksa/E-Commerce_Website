@@ -23,10 +23,9 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Lightweight background pre-warming ping on initial load
+// Silent background pre-warming ping on initial load (no-cors mode to prevent any browser console warnings)
 if (typeof window !== 'undefined') {
-  const base = BACKEND_API_URL.replace(/\/api\/?$/, '');
-  fetch(`${base}/`, { method: 'GET', mode: 'cors', cache: 'no-store' }).catch(() => {});
+  fetch(`${BACKEND_API_URL}/products`, { method: 'GET', mode: 'no-cors', cache: 'no-store' }).catch(() => {});
 }
 
 export default api;

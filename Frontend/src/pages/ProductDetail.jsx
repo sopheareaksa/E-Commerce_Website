@@ -96,7 +96,7 @@ export default function ProductDetail() {
 
           <div className="flex items-center space-x-2 mb-4 text-sm">
             <div className="text-amber-400 flex">
-              {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />}
+              {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
             </div>
             <span className="text-gray-400 dark:text-slate-500">(1 customer review)</span>
           </div>

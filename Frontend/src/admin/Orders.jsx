@@ -3,9 +3,27 @@ import api from '../api/axios';
 import { ShoppingBag, CheckCircle, Clock, DollarSign } from 'lucide-react';
 
 export default function Orders() {
-  const [orders, setOrders] = useState([]);
-  const [stats, setStats] = useState({ total: 0, completed: 0, pending: 0, revenue: 0 });
+  const [orders, setOrders] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cached_admin_orders');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [stats, setStats] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cached_admin_orders_stats');
+      return cached ? JSON.parse(cached) : { total: 0, completed: 0, pending: 0, revenue: 0 };
+    } catch {
+      return { total: 0, completed: 0, pending: 0, revenue: 0 };
+    }
+  });
+
+  const [loading, setLoading] = useState(() => !localStorage.getItem('cached_admin_orders'));
   const [expanded, setExpanded] = useState(new Set());
+
   useEffect(() => {
     api.get('/admin/orders').then((res) => {
       const data = res.data;
@@ -14,8 +32,16 @@ export default function Orders() {
       const completed = data.filter((o) => ['completed', 'paid'].includes(o.order_status?.toLowerCase())).length;
       const pending = total - completed;
       const revenue = data.reduce((s, o) => s + parseFloat(o.order_cost || 0), 0);
-      setStats({ total, completed, pending, revenue });
-    }).catch(() => {});
+      const newStats = { total, completed, pending, revenue };
+      setStats(newStats);
+      try {
+        localStorage.setItem('cached_admin_orders', JSON.stringify(data));
+        localStorage.setItem('cached_admin_orders_stats', JSON.stringify(newStats));
+      } catch {
+        // quota safety
+      }
+    }).catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const toggleOrder = (id) => {
@@ -51,7 +77,11 @@ export default function Orders() {
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">Total Orders</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+            {loading && stats.total === 0 ? (
+              <div className="h-7 w-10 bg-slate-200 dark:bg-slate-700 animate-pulse rounded mt-1" />
+            ) : (
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+            )}
           </div>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-5 flex items-center gap-4">
@@ -60,7 +90,11 @@ export default function Orders() {
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">Completed</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.completed}</p>
+            {loading && stats.completed === 0 ? (
+              <div className="h-7 w-10 bg-slate-200 dark:bg-slate-700 animate-pulse rounded mt-1" />
+            ) : (
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.completed}</p>
+            )}
           </div>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-5 flex items-center gap-4">
@@ -69,7 +103,11 @@ export default function Orders() {
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">Pending</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.pending}</p>
+            {loading && stats.pending === 0 ? (
+              <div className="h-7 w-10 bg-slate-200 dark:bg-slate-700 animate-pulse rounded mt-1" />
+            ) : (
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.pending}</p>
+            )}
           </div>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-5 flex items-center gap-4">
@@ -78,7 +116,11 @@ export default function Orders() {
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">Revenue</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">${stats.revenue.toFixed(2)}</p>
+            {loading && stats.revenue === 0 ? (
+              <div className="h-7 w-16 bg-slate-200 dark:bg-slate-700 animate-pulse rounded mt-1" />
+            ) : (
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">${stats.revenue.toFixed(2)}</p>
+            )}
           </div>
         </div>
       </div>
@@ -103,7 +145,24 @@ export default function Orders() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
-              {orders.length === 0 ? (
+              {loading && orders.length === 0 ? (
+                Array.from({ length: 4 }).map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="px-6 py-4"><div className="w-10 h-4 bg-slate-200 dark:bg-slate-700 rounded" /></td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                        <div className="w-24 h-4 bg-slate-200 dark:bg-slate-700 rounded" />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4"><div className="w-28 h-4 bg-slate-200 dark:bg-slate-700 rounded" /></td>
+                    <td className="px-6 py-4"><div className="w-16 h-4 bg-slate-200 dark:bg-slate-700 rounded" /></td>
+                    <td className="px-6 py-4"><div className="w-20 h-6 bg-slate-200 dark:bg-slate-700 rounded-full" /></td>
+                    <td className="px-6 py-4"><div className="w-20 h-4 bg-slate-200 dark:bg-slate-700 rounded" /></td>
+                    <td className="px-6 py-4"><div className="w-6 h-6 bg-slate-200 dark:bg-slate-700 rounded-full" /></td>
+                  </tr>
+                ))
+              ) : orders.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-16 text-center">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 dark:bg-slate-700 mb-4">

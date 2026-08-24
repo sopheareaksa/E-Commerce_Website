@@ -4,28 +4,60 @@ import api from '../api/axios';
 import { Package, ShoppingBag, UserCheck, Plus, Pencil, Trash2 } from 'lucide-react';
 
 export default function Dashboard() {
-  const [products, setProducts] = useState([]);
-  const [stats, setStats] = useState({ total_products: 0, total_users: 0, total_registered: 0 });
+  const [products, setProducts] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cached_admin_products') || localStorage.getItem('cached_products');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [stats, setStats] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cached_admin_stats');
+      return cached ? JSON.parse(cached) : { total_products: 0, total_users: 0, total_registered: 0 };
+    } catch {
+      return { total_products: 0, total_users: 0, total_registered: 0 };
+    }
+  });
+
+  const [loading, setLoading] = useState(() => {
+    return !localStorage.getItem('cached_admin_stats');
+  });
+
   useEffect(() => {
     Promise.all([
       api.get('/products'),
       api.get('/admin/dashboard'),
     ]).then(([productsRes, statsRes]) => {
-      setProducts(productsRes.data);
+      const prods = productsRes.data;
       const d = statsRes.data;
-      setStats({
-        total_products: d.total_products || 0,
+      const newStats = {
+        total_products: d.total_products || prods.length || 0,
         total_users: d.total_users || 0,
         total_registered: d.total_users || 0,
-      });
-    }).catch(() => {});
+      };
+      setProducts(prods);
+      setStats(newStats);
+      try {
+        localStorage.setItem('cached_admin_products', JSON.stringify(prods));
+        localStorage.setItem('cached_admin_stats', JSON.stringify(newStats));
+      } catch {
+        // quota safety
+      }
+    }).catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
     try {
       await api.delete(`/admin/products/${id}`);
-      setProducts(products.filter((p) => p.product_id !== id));
+      const updated = products.filter((p) => p.product_id !== id);
+      setProducts(updated);
+      setStats((prev) => ({ ...prev, total_products: Math.max(0, prev.total_products - 1) }));
+      localStorage.setItem('cached_admin_products', JSON.stringify(updated));
     } catch (err) {
       alert(err.response?.data?.message || 'Delete failed');
     }
@@ -33,6 +65,7 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 flex items-center gap-4 transition-all hover:shadow-md">
           <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-600">
@@ -40,7 +73,11 @@ export default function Dashboard() {
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500 dark:text-slate-400">Total Products</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_products}</p>
+            {loading && stats.total_products === 0 ? (
+              <div className="h-8 w-16 bg-slate-200 dark:bg-slate-700 animate-pulse rounded mt-1" />
+            ) : (
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_products}</p>
+            )}
           </div>
         </div>
 
@@ -50,7 +87,11 @@ export default function Dashboard() {
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500 dark:text-slate-400">Total Customers</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_users}</p>
+            {loading && stats.total_users === 0 ? (
+              <div className="h-8 w-16 bg-slate-200 dark:bg-slate-700 animate-pulse rounded mt-1" />
+            ) : (
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_users}</p>
+            )}
           </div>
         </div>
 
@@ -60,11 +101,16 @@ export default function Dashboard() {
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500 dark:text-slate-400">Registered Accounts</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_registered}</p>
+            {loading && stats.total_registered === 0 ? (
+              <div className="h-8 w-16 bg-slate-200 dark:bg-slate-700 animate-pulse rounded mt-1" />
+            ) : (
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_registered}</p>
+            )}
           </div>
         </div>
       </div>
 
+      {/* Product Table */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
         <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -88,7 +134,25 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
-              {products.length === 0 ? (
+              {loading && products.length === 0 ? (
+                Array.from({ length: 5 }).map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-slate-200 dark:bg-slate-700 rounded-xl" />
+                        <div className="space-y-2">
+                          <div className="w-36 h-4 bg-slate-200 dark:bg-slate-700 rounded" />
+                          <div className="w-16 h-3 bg-slate-200 dark:bg-slate-700 rounded" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4"><div className="w-20 h-6 bg-slate-200 dark:bg-slate-700 rounded-full" /></td>
+                    <td className="px-6 py-4"><div className="w-16 h-5 bg-slate-200 dark:bg-slate-700 rounded" /></td>
+                    <td className="px-6 py-4"><div className="w-12 h-5 bg-slate-200 dark:bg-slate-700 rounded" /></td>
+                    <td className="px-6 py-4 text-right"><div className="w-16 h-8 bg-slate-200 dark:bg-slate-700 rounded ml-auto" /></td>
+                  </tr>
+                ))
+              ) : products.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-16 text-center">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 dark:bg-slate-700 mb-4">

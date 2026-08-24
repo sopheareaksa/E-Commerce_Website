@@ -3,9 +3,27 @@ import api from '../api/axios';
 import { Users, UserCheck, UserPlus } from 'lucide-react';
 
 export default function UsersPage() {
-  const [users, setUsers] = useState([]);
-  const [stats, setStats] = useState({ total: 0, active: 0, latestId: 0 });
+  const [users, setUsers] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cached_admin_users');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [stats, setStats] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cached_admin_users_stats');
+      return cached ? JSON.parse(cached) : { total: 0, active: 0, latestId: 0 };
+    } catch {
+      return { total: 0, active: 0, latestId: 0 };
+    }
+  });
+
+  const [loading, setLoading] = useState(() => !localStorage.getItem('cached_admin_users'));
   const [search, setSearch] = useState('');
+
   useEffect(() => {
     api.get('/admin/users').then((res) => {
       const data = res.data;
@@ -13,8 +31,16 @@ export default function UsersPage() {
       const total = data.length;
       const active = data.length;
       const latestId = data.length > 0 ? Math.max(...data.map((u) => u.user_id)) : 0;
-      setStats({ total, active, latestId });
-    }).catch(() => {});
+      const newStats = { total, active, latestId };
+      setStats(newStats);
+      try {
+        localStorage.setItem('cached_admin_users', JSON.stringify(data));
+        localStorage.setItem('cached_admin_users_stats', JSON.stringify(newStats));
+      } catch {
+        // quota safety
+      }
+    }).catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const filtered = users.filter((u) => {
@@ -31,7 +57,11 @@ export default function UsersPage() {
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">Total Registered</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+            {loading && stats.total === 0 ? (
+              <div className="h-7 w-12 bg-slate-200 dark:bg-slate-700 animate-pulse rounded mt-1" />
+            ) : (
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+            )}
           </div>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-5 flex items-center gap-4">
@@ -40,7 +70,11 @@ export default function UsersPage() {
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">Active Accounts</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.active}</p>
+            {loading && stats.active === 0 ? (
+              <div className="h-7 w-12 bg-slate-200 dark:bg-slate-700 animate-pulse rounded mt-1" />
+            ) : (
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.active}</p>
+            )}
           </div>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-5 flex items-center gap-4">
@@ -49,7 +83,11 @@ export default function UsersPage() {
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">Latest User ID</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.latestId || '—'}</p>
+            {loading && stats.latestId === 0 ? (
+              <div className="h-7 w-12 bg-slate-200 dark:bg-slate-700 animate-pulse rounded mt-1" />
+            ) : (
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.latestId || '—'}</p>
+            )}
           </div>
         </div>
       </div>
@@ -81,7 +119,22 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
-              {filtered.length === 0 ? (
+              {loading && filtered.length === 0 ? (
+                Array.from({ length: 4 }).map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="px-6 py-4"><div className="w-4 h-4 bg-slate-200 dark:bg-slate-700 rounded" /></td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                        <div className="w-28 h-4 bg-slate-200 dark:bg-slate-700 rounded" />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4"><div className="w-36 h-4 bg-slate-200 dark:bg-slate-700 rounded" /></td>
+                    <td className="px-6 py-4"><div className="w-12 h-6 bg-slate-200 dark:bg-slate-700 rounded-full" /></td>
+                    <td className="px-6 py-4"><div className="w-16 h-6 bg-slate-200 dark:bg-slate-700 rounded-full" /></td>
+                  </tr>
+                ))
+              ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-16 text-center">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 dark:bg-slate-700 mb-4">

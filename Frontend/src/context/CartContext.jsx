@@ -15,38 +15,59 @@ export function CartProvider({ children }) {
   });
   const { user } = useAuth();
 
-  // Load cart when user logs in
+  // Load cart from backend when user is logged in
   useEffect(() => {
     if (user) {
-      api.get('/cart').then((res) => setCart(res.data)).catch(() => {});
+      api.get('/cart')
+        .then((res) => {
+          if (Array.isArray(res.data)) {
+            setCart(res.data);
+            try {
+              localStorage.setItem('cart', JSON.stringify(res.data));
+            } catch {
+              // quota safety
+            }
+          }
+        })
+        .catch(() => {});
     }
   }, [user]);
 
-  // Persist guest cart to localStorage
+  // Persist cart to localStorage on every change
   useEffect(() => {
-    if (!user) {
+    try {
       localStorage.setItem('cart', JSON.stringify(cart));
+    } catch {
+      // quota safety
     }
-  }, [cart, user]);
+  }, [cart]);
 
   const addToCart = useCallback(
     async (product, quantity = 1) => {
-      // Optimistic update for everyone (instant UI)
+      // Instant optimistic UI update
       setCart((prev) => {
         const existing = prev.find((i) => i.product_id === product.product_id);
+        let updated;
         if (existing) {
-          return prev.map((i) =>
+          updated = prev.map((i) =>
             i.product_id === product.product_id ? { ...i, quantity: i.quantity + quantity } : i
           );
+        } else {
+          updated = [...prev, { ...product, quantity }];
         }
-        return [...prev, { ...product, quantity }];
+        try {
+          localStorage.setItem('cart', JSON.stringify(updated));
+        } catch {
+          // safety
+        }
+        return updated;
       });
 
       if (user) {
         try {
           await api.post('/cart', { product_id: product.product_id, quantity });
         } catch {
-          // Reconcile with server on failure
+          // Re-fetch to reconcile on error
           api.get('/cart').then((res) => setCart(res.data)).catch(() => {});
         }
       }
@@ -58,57 +79,59 @@ export function CartProvider({ children }) {
     async (productId, quantity) => {
       if (quantity < 1) return;
 
-      if (user) {
-        const item = cart.find((i) => i.product_id === productId);
-        if (!item?.cart_item_id) return;
-
-        const oldQuantity = item.quantity;
-
-        // Optimistic
-        setCart((prev) =>
-          prev.map((i) => (i.product_id === productId ? { ...i, quantity } : i))
+      // Instant optimistic UI update
+      setCart((prev) => {
+        const updated = prev.map((i) =>
+          i.product_id === productId ? { ...i, quantity } : i
         );
-
         try {
-          await api.put(`/cart/${item.cart_item_id}`, { quantity });
+          localStorage.setItem('cart', JSON.stringify(updated));
         } catch {
-          // Revert on error
-          setCart((prev) =>
-            prev.map((i) => (i.product_id === productId ? { ...i, quantity: oldQuantity } : i))
-          );
+          // safety
         }
-      } else {
-        setCart((prev) =>
-          prev.map((i) => (i.product_id === productId ? { ...i, quantity } : i))
-        );
+        return updated;
+      });
+
+      if (user) {
+        try {
+          await api.put(`/cart/${productId}`, { quantity });
+        } catch {
+          // Fallback sync
+          api.get('/cart').then((res) => setCart(res.data)).catch(() => {});
+        }
       }
     },
-    [user, cart]
+    [user]
   );
 
   const removeFromCart = useCallback(
     async (productId) => {
-      if (user) {
-        const item = cart.find((i) => i.product_id === productId);
-        if (!item?.cart_item_id) return;
-
-        // Optimistic
-        setCart((prev) => prev.filter((i) => i.product_id !== productId));
-
+      // Instant optimistic removal from UI and localStorage
+      setCart((prev) => {
+        const updated = prev.filter((i) => i.product_id !== productId);
         try {
-          await api.delete(`/cart/${item.cart_item_id}`);
+          localStorage.setItem('cart', JSON.stringify(updated));
         } catch {
-          // Re-fetch to restore correct state on failure
+          // safety
+        }
+        return updated;
+      });
+
+      if (user) {
+        try {
+          await api.delete(`/cart/${productId}`);
+        } catch {
+          // Fallback sync on failure
           api.get('/cart').then((res) => setCart(res.data)).catch(() => {});
         }
-      } else {
-        setCart((prev) => prev.filter((i) => i.product_id !== productId));
       }
     },
-    [user, cart]
+    [user]
   );
 
   const clearCart = useCallback(async () => {
+    setCart([]);
+    localStorage.removeItem('cart');
     if (user) {
       try {
         await api.delete('/cart');
@@ -116,17 +139,16 @@ export function CartProvider({ children }) {
         /* ignore */
       }
     }
-    setCart([]);
-    localStorage.removeItem('cart');
   }, [user]);
 
-  const totalItems = useMemo(() => cart.reduce((sum, i) => sum + i.quantity, 0), [cart]);
+  const totalItems = useMemo(() => cart.reduce((sum, i) => sum + (parseInt(i.quantity, 10) || 1), 0), [cart]);
 
   const totalPrice = useMemo(
     () =>
       cart.reduce((sum, i) => {
-        const price = i.product_discount > 0 ? i.product_discount : i.product_price;
-        return sum + price * i.quantity;
+        const price = parseFloat(i.product_discount) > 0 ? parseFloat(i.product_discount) : parseFloat(i.product_price);
+        const qty = parseInt(i.quantity, 10) || 1;
+        return sum + price * qty;
       }, 0),
     [cart]
   );

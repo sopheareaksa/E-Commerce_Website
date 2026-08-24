@@ -43,7 +43,8 @@ export default function Cart() {
               <div key={item.product_id || item.cart_item_id} className="flex items-center gap-6">
                 <button
                   onClick={() => removeFromCart(item.product_id)}
-                  className="text-gray-400 dark:text-slate-500 hover:text-black px-2"
+                  className="text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 p-2 rounded-lg transition-colors font-bold text-base cursor-pointer"
+                  title="Remove from cart"
                 >
                   ✕
                 </button>

@@ -1,8 +1,14 @@
 import axios from 'axios';
 
+const BACKEND_API_URL =
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? 'https://zodiac-backend-6vfn.onrender.com/api'
+    : 'http://localhost:8000/api');
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
-  timeout: 20000,
+  baseURL: BACKEND_API_URL,
+  timeout: 25000,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -19,7 +25,7 @@ api.interceptors.request.use((config) => {
 
 // Lightweight background pre-warming ping on initial load
 if (typeof window !== 'undefined') {
-  const base = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/api\/?$/, '');
+  const base = BACKEND_API_URL.replace(/\/api\/?$/, '');
   fetch(`${base}/`, { method: 'GET', mode: 'cors', cache: 'no-store' }).catch(() => {});
 }
 
